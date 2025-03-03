@@ -484,7 +484,7 @@ class PdbDataset(Dataset):
             elif path_extension == '.npz':
                 processed_feats = du.read_npz(processed_file_path)
                 processed_feats = du.parse_npz_feats(npz_feats=processed_feats)
-                modeled_idx = processed_feats['residue_index']
+                modeled_idx = processed_feats['modeled_index']
                 # here the actual residue indices which are modeled are stored in the residue_index field
             else:
                 raise ValueError(f'Unknown file extension of {processed_file_path}: {path_extension}')

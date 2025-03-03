@@ -54,9 +54,18 @@ To sample backbone structures using the model (without the re-folding procedure,
 python experiments/inference.py inference.ckpt_path=<path/to/ckpt>
 ```
 
+You can specify the inference settings like the number of samples and timesteps via a config file like `configs/inference.yaml`.
+
 ### Download model weights
 
-The weights of the models reported in the paper will be made available in the future
+The weights of the models reported in the paper are published at `https://github.com/hits-mli/gafl/releases/download/v1.0.0/gafl-pdb.zip`. Download the zip file, extract it and specify the path to the checkpoint in the inference command:
+```bash
+mkdir -p outputs
+wget https://github.com/hits-mli/gafl/releases/download/v1.0.0/gafl-pdb.zip
+unzip gafl-pdb.zip -d outputs
+python experiments/inference.py inference.ckpt_path=outputs/gafl-pdb/gafl321.ckpt
+```
+
 
 
 ## Training

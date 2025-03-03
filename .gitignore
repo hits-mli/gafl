@@ -15,6 +15,7 @@ outputs/
 scope_preprocessed/
 preprocessed/
 datasets/
+*.zip
 
 # job.sh
 
