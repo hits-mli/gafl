@@ -1,0 +1,4 @@
+node_features:
+  embed_breaks: True
+edge_features:
+  embed_breaks: True

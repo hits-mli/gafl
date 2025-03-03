@@ -1,0 +1,36 @@
+defaults:
+  - data: pdb
+  - experiment: pdb
+  - interpolant: pdb
+  - model: gafl
+  - _self_
+
+hydra:
+  run:
+    dir: outputs/hydra/
+
+experiment:
+  seed: 123
+  first_val_epoch: 5000
+  trainer:
+    max_epochs: 5200
+    check_val_every_n_epoch: 2
+  checkpointer:
+    every_n_epochs: 50
+  checkpointer2:
+    first_epoch: ${experiment.first_val_epoch}
+    save_top_k: 30
+    every_n_epochs: ${experiment.trainer.check_val_every_n_epoch}
+  optimizer:
+    lr: 0.0002
+  scheduler:
+    enabled: True
+    warmup_lr: 0.00004
+    lr_min: 0.0001
+    warmup_epochs: 50
+    constant_epochs: 3500
+    min_epoch: 5000
+
+data:
+  dataset:
+    seed: 123

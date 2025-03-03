@@ -1,0 +1,34 @@
+dataset:
+  seed: 123
+  max_num_res: 128
+  cache_num_res: 0
+  min_num_res: 0
+  subset: null
+  generate_valid_samples: True # Determines if validation samples should be generated # Logically makes more sense in the experiment config -> Find a way to shift it there
+  samples_per_eval_length: 5
+  num_eval_lengths: 8
+  min_eval_length: 500
+  train_valid_test_split: [1.0, 0.0, 0.0]
+  csv_path: </path/to/scope/metadata.csv>
+  cluster_path_framediff: null
+  filter_breaks: False
+  label_breaks: False
+  use_res_idx: False
+  scrmsd_csv_path: null
+  filter_scrmsd: inf
+  calc_dssp: False
+  max_coil_pct: 1.
+  allowed_oligomers: [monomeric]
+  target_sec_content:
+    helix_percent: 0.39
+    strand_percent: 0.21
+  apply_clustering: False
+
+loader:
+  num_workers: 4
+  prefetch_factor: 10
+
+sampler:
+  max_batch_size: 100
+  max_num_res_squared: 500_000
+  clustered: ${data.dataset.apply_clustering}

@@ -1,0 +1,39 @@
+defaults:
+  - default
+  - _self_
+
+debug: False
+use_tqdm: False
+
+warm_start: null
+warm_start_cfg_override: True
+first_val_epoch: 2000
+wandb:
+  name: gafl
+  project: gafl-pdb
+  save_dir: outputs/
+trainer:
+  min_epochs: 1 # prevents early stopping
+  max_epochs: 100000
+  check_val_every_n_epoch: 2
+checkpointer:
+  every_n_epochs: 50
+checkpointer2:
+  first_epoch: ${experiment.first_val_epoch}
+  save_top_k: 20
+  every_n_epochs: ${experiment.trainer.check_val_every_n_epoch}
+
+reset_optimizer_on_load: False
+optimizer:
+  lr: 0.00025
+scheduler:
+  enabled: True
+  warmup_lr: 0.00001
+  lr_min: 0.0001
+  warmup_epochs: 20
+  constant_epochs: 1500
+  min_epoch: 2000
+
+training:
+  aux_loss_t_pass: 0.75
+  aux_loss_weight: 1.

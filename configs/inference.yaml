@@ -1,0 +1,57 @@
+defaults:
+  - _self_
+
+hydra:
+  run:
+    dir: outputs/hydra/
+
+inference:
+  # Use this to write with date-time stamp.
+  name: run_${now:%Y-%m-%d}_${now:%H-%M-%S-%f}
+  seed: 123
+  ckpt_path: <path/to/ckpt>
+  output_dir: outputs/inference/
+
+  use_gpu: True
+  num_gpus: 2
+
+  interpolant:
+    min_t: 1e-2
+    rots:
+      corrupt: True
+      sample_schedule: exp
+      exp_rate: 10
+    trans:
+      corrupt: True
+      sample_schedule: linear
+    sampling:
+      num_timesteps: 200
+    self_condition: True
+    noise_res_scaling_power: 0.0
+    noise_scale: 1.
+
+  samples:
+
+    # Number of backbone samples per sequence length.
+    samples_per_length: 10
+
+    # Batch size for sampling.
+    batch_size: 10
+
+    # Number of ESMFfold samples per backbone sample.
+    seq_per_sample: 8
+
+    # Minimum sequence length to sample.
+    min_length: 100
+
+    # Maximum sequence length to sample.
+    max_length: 300
+
+    # gap between lengths to sample. i.e. this script will sample all lengths
+    # in range(min_length, max_length, length_step)
+    length_step: 100
+
+    # Subset of lengths to sample. If null, sample all targets.
+    length_subset: null
+
+    overwrite: False

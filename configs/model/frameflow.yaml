@@ -1,0 +1,34 @@
+defaults:
+  - default
+
+module: models.flow_model.FlowModel
+node_embed_size: 256
+edge_embed_size: 128
+symmetric: False
+node_features:
+  c_s: ${model.node_embed_size}
+  c_pos_emb: 128
+  c_timestep_emb: 128
+  embed_diffuse_mask: False
+  max_num_res: 2000
+  timestep_int: 1000
+edge_features:
+  single_bias_transition_n: 2
+  c_s: ${model.node_embed_size}
+  c_p: ${model.edge_embed_size}
+  relpos_k: 64
+  use_rbf: True
+  num_rbf: 32
+  feat_dim: 64
+  num_bins: 22
+  self_condition: True
+ipa:
+  c_s: ${model.node_embed_size}
+  c_z: ${model.edge_embed_size}
+  c_hidden: 128
+  no_heads: 8
+  no_qk_points: 8
+  no_v_points: 12
+  seq_tfmr_num_heads: 4
+  seq_tfmr_num_layers: 2
+  num_blocks: 6

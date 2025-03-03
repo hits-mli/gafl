@@ -1,0 +1,29 @@
+defaults:
+  - default
+
+dataset:
+  seed: 123
+  max_num_res: 512
+  cache_num_res: 0
+  min_num_res: 0
+  samples_per_eval_length: 10
+  num_eval_lengths: 5
+  min_num_res_eval: 100
+  min_eval_length: 300
+  csv_path: <path/to/FrameDiff_dataset/metadata.csv>
+  cluster_path_framediff: </path/to/FrameDiff_dataset/clusters-by-entity-30.txt>
+  break_csv_path: null
+  filter_breaks: False
+  label_breaks: True
+  use_res_idx: True
+  filter_scrmsd: inf
+  max_coil_pct: 0.5
+  allowed_oligomers: [monomeric]
+  calc_dssp: True
+  train_valid_test_split: [1., 0., 0.]
+  apply_clustering: True
+
+sampler:
+  max_batch_size: 100
+  max_num_res_squared: 500_000
+  clustered: ${data.dataset.apply_clustering}

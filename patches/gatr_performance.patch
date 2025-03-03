@@ -1,0 +1,39 @@
+diff --git a/gatr/primitives/invariants.py b/gatr/primitives/invariants.py
+index 0dc8718..70a25fc 100644
+--- a/gatr/primitives/invariants.py
++++ b/gatr/primitives/invariants.py
+@@ -36,7 +36,6 @@ def compute_inner_product_mask(device=torch.device("cpu")) -> torch.Tensor:
+     inner_product_mask = torch.diag(gp[0]) * _compute_reversal(device=device, dtype=torch.float32)
+     return inner_product_mask.bool()
+ 
+-
+ def inner_product(x: torch.Tensor, y: torch.Tensor, channel_sum: bool = False) -> torch.Tensor:
+     """Computes the inner product of multivectors f(x,y) = <x, y> = <~x y>_0.
+ 
+@@ -91,9 +90,8 @@ def norm(x: torch.Tensor) -> torch.Tensor:
+     outputs : torch.Tensor with shape (..., 1)
+         Geometric algebra norm of x.
+     """
+-
+-    return torch.sqrt(torch.clamp(inner_product(x, x), 0.0))
+-
++    return torch.linalg.norm(x[..., compute_inner_product_mask(device=x.device)], dim=-1, keepdim=True) # torch.linalg.norm is faster than the einsum version below
++    # return torch.sqrt(torch.clamp(inner_product(x, x), 0.0))
+ 
+ def pin_invariants(x: torch.Tensor) -> torch.Tensor:
+     """Computes five invariants from multivectors: scalar component, norms of the four other grades.
+diff --git a/gatr/primitives/linear.py b/gatr/primitives/linear.py
+index 9f7354e..d8a50df 100644
+--- a/gatr/primitives/linear.py
++++ b/gatr/primitives/linear.py
+@@ -129,8 +129,8 @@ def equi_linear(x: torch.Tensor, coeffs: torch.Tensor) -> torch.Tensor:
+         Result. Batch dimensions are result of broadcasting between x and coeffs.
+     """
+     basis = _compute_pin_equi_linear_basis(device=x.device, dtype=x.dtype)
+-    return custom_einsum("y x a, a i j, ... x j -> ... y i", coeffs, basis, x, path=[0, 1, 0, 1])
+-
++    # return custom_einsum("y x a, a i j, ... x j -> ... y i", coeffs, basis, x, path=[0, 1, 0, 1])
++    return cached_einsum("y x a, a i j, ... x j -> ... y i", coeffs, basis, x)
+ 
+ def grade_project(x: torch.Tensor) -> torch.Tensor:
+     """Projects an input tensor to the individual grades.

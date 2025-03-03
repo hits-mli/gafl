@@ -1,0 +1,70 @@
+debug: False
+use_wandb: True
+use_tqdm: True
+
+seed: 123
+num_devices: 2
+warm_start: null
+warm_start_cfg_override: True
+use_swa: False
+first_val_epoch: 0
+batch_ot:
+  enabled: True
+  cost: kabsch
+  noise_per_sample: 1
+training:
+  min_plddt_mask: null
+  loss: se3_vf_loss
+  bb_atom_scale: 0.1
+  trans_scale: 0.1
+  translation_loss_weight: 2.0
+  t_normalize_clip: 0.9
+  rotation_loss_weights: 1.0
+  aux_loss_weight: 1.0
+  aux_loss_t_pass: 0.25
+  t_bins: 4
+wandb:
+  name: gafl
+  project: protein-flow-matching
+  save_dir: outputs/
+  # save_code: True
+  tags: []
+optimizer:
+  lr: 0.0001
+scheduler:
+  enabled: False
+  warmup_lr: 0.00001
+  lr_min: 0.00005
+  warmup_epochs: 10
+  constant_epochs: 100
+  min_epoch: 200
+reset_optimizer_on_load: False
+trainer:
+  overfit_batches: 0
+  min_epochs: 1 # prevents early stopping
+  max_epochs: 5000
+  accelerator: gpu
+  log_every_n_steps: 1
+  deterministic: False
+  strategy: ddp
+  check_val_every_n_epoch: 20
+  default_root_dir: outputs/
+  accumulate_grad_batches: 1
+checkpointer:
+  dirpath: outputs/ckpt/${experiment.wandb.project}/${experiment.wandb.name}/${now:%Y-%m-%d}_${now:%H-%M-%S-%f}
+  save_last: True
+  filename: "epoch:{epoch:03d}"
+  every_n_epochs: 200
+  save_top_k: -1
+  auto_insert_metric_name: False
+  save_on_train_epoch_end: True
+checkpointer2:
+  dirpath: outputs/ckpt/${experiment.wandb.project}/${experiment.wandb.name}/${now:%Y-%m-%d}_${now:%H-%M-%S}
+  save_last: False
+  filename: "sec_dev:{sec_deviation:.2f}-epoch:{epoch:03d}"
+  save_top_k: 10
+  monitor: valid/sec_deviation
+  mode: min
+  every_n_epochs: ${experiment.trainer.check_val_every_n_epoch}
+  first_epoch: ${experiment.first_val_epoch}
+  auto_insert_metric_name: False

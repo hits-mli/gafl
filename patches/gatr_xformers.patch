@@ -1,0 +1,64 @@
+diff --git a/gatr/primitives/attention.py b/gatr/primitives/attention.py
+index bfdf495..0579a23 100644
+--- a/gatr/primitives/attention.py
++++ b/gatr/primitives/attention.py
+@@ -9,7 +9,7 @@ import torch
+ from einops import rearrange
+ from torch import Tensor
+ from torch.nn.functional import scaled_dot_product_attention as torch_sdpa
+-from xformers.ops import AttentionBias, memory_efficient_attention
++# from xformers.ops import AttentionBias, memory_efficient_attention
+ 
+ from gatr.primitives.dual import join_norm
+ from gatr.primitives.invariants import inner_product
+@@ -32,7 +32,7 @@ _TRIVECTOR_IDX = [11, 12, 13, 14]
+ _MASKED_OUT = float("-inf")
+ 
+ # Force the use of xformers attention, even when no xformers attention mask is provided:
+-FORCE_XFORMERS = False
++# FORCE_XFORMERS = False
+ 
+ 
+ def sdp_attention(
+@@ -257,7 +257,7 @@ def _build_dist_vec(tri: Tensor, basis: Tensor, normalizer: Callable[[Tensor], T
+         Batch of 5D vectors
+     """
+     tri_normed = tri * normalizer(tri[..., [3]])
+-    vec = cached_einsum("xyz,...x,...y->...z", basis, tri_normed, tri_normed)
++    vec = cached_einsum("xyz,... x,... y->... z", basis, tri_normed, tri_normed)
+     return vec
+ 
+ 
+@@ -417,7 +417,8 @@ def scaled_dot_product_attention(
+     query: Tensor,
+     key: Tensor,
+     value: Tensor,
+-    attn_mask: Optional[Union[AttentionBias, Tensor]] = None,
++    # attn_mask: Optional[Union[AttentionBias, Tensor]] = None,
++    attn_mask: Optional[Tensor] = None,
+ ) -> Tensor:
+     """Execute (vanilla) scaled dot-product attention.
+ 
+@@ -440,13 +441,13 @@ def scaled_dot_product_attention(
+     Tensor
+         of shape [batch, head, item, d]
+     """
+-    if FORCE_XFORMERS or isinstance(attn_mask, AttentionBias):
+-        query = query.transpose(1, 2)  # [batch, head, item, d] -> [batch, item, head, d]
+-        key = key.transpose(1, 2)
+-        value = value.transpose(1, 2)
+-        out = memory_efficient_attention(
+-            query.contiguous(), key.contiguous(), value, attn_bias=attn_mask
+-        )
+-        out = out.transpose(1, 2)  # [batch, item, head, d] -> [batch, head, item, d]
+-        return out
++    # if FORCE_XFORMERS or isinstance(attn_mask, AttentionBias):
++    #     query = query.transpose(1, 2)  # [batch, head, item, d] -> [batch, item, head, d]
++    #     key = key.transpose(1, 2)
++    #     value = value.transpose(1, 2)
++    #     out = memory_efficient_attention(
++    #         query.contiguous(), key.contiguous(), value, attn_bias=attn_mask
++    #     )
++    #     out = out.transpose(1, 2)  # [batch, item, head, d] -> [batch, head, item, d]
++    #     return out
+     return torch_sdpa(query, key, value, attn_mask=attn_mask)
