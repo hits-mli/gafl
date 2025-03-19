@@ -187,6 +187,7 @@ plots/
 test.py
 ATLAS/
 *.sh
+!install_gatr.sh
 tmp/
 databases/
 dataset-*
