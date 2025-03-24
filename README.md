@@ -84,4 +84,4 @@ python experiments/train.py model=gafl data=pdb
 
 ### Download dataset
 
-The datasets reported in the paper will be made available in the future
+GAFL was trained on the [PDB dataset from FrameDiff](https://github.com/jasonkyuyim/se3_diffusion?tab=readme-ov-file#downloading-the-pdb-for-training). For ablations, the [SCOPe dataset from FrameFlow](https://github.com/microsoft/protein-frame-flow/tree/legacy?tab=readme-ov-file#data) was used.

@@ -18,6 +18,8 @@ from Bio import PDB
 import biotite.structure as struc
 import io
 import pandas as pd
+from pathlib import Path
+import warnings
 
 from gafl.data import protein
 from gafl.data import residue_constants
@@ -25,6 +27,8 @@ from gafl.data import residue_constants
 
 Rigid = ru.Rigid
 Protein = protein.Protein
+
+PICKLE_EXTENSIONS = ['.pkl', '.pickle', '.pck', '.db', '.pck']
 
 # Global map from chain characters to integers.
 ALPHANUMERIC = string.ascii_letters + string.digits + ' '
@@ -209,12 +213,11 @@ def read_pkl(read_path: str, verbose=True, use_torch=False, map_location=None):
 				print(f'Failed to read {read_path}. First error: {e}\n Second error: {e2}')
 			raise(e)
 	  
-def read_npz(read_path: str):
+def read_npz(npz:dict):
 	"""
-	Reads in the .npz file containing chain features
+	Converts dict of np arrays to a biotite AtomArray object.
 	Returns: a struc.AtomArray (biotite) object
 	"""
-	npz = np.load(read_path)
 
 	coords = npz['coords']
 	chain_id = npz['chain_id']
@@ -222,7 +225,21 @@ def read_npz(read_path: str):
 	res_name = npz['res_name']
 	atom_name = npz['atom_name']
 	element = npz['element']
-	b_factor = npz['b_factor']
+
+	if 'b_factor' in npz and npz['b_factor'].shape !=(0,):
+		b_factor = npz['b_factor']
+	else:
+		b_factor = np.zeros(coords.shape[0])
+
+	# some shape checks:
+	num_bb_atoms = coords.shape[0]
+
+	assert chain_id.shape[0] == num_bb_atoms, f'chain_id shape {chain_id.shape} does not match coords shape {coords.shape}'
+	assert res_id.shape[0] == num_bb_atoms, f'res_id shape {res_id.shape} does not match coords shape {coords.shape}'
+	assert res_name.shape[0] == num_bb_atoms, f'res_name shape {res_name.shape} does not match coords shape {coords.shape}'
+	assert atom_name.shape[0] == num_bb_atoms, f'atom_name shape {atom_name.shape} does not match coords shape {coords.shape}'
+	assert element.shape[0] == num_bb_atoms, f'element shape {element.shape} does not match coords shape {coords.shape}'
+	assert b_factor.shape[0] == num_bb_atoms, f'b_factor shape {b_factor.shape} does not match coords shape {coords.shape}'
 
 	# construct a biotite AtomArray
 	chain_feats = struc.AtomArray(len(coords))
@@ -741,3 +758,40 @@ def idx_breaks(chain_feats:dict):
 		raise ValueError(f"res_idxs must be a torch.Tensor, list or np.ndarray, not {type(res_idxs)}")
 
 	return np.where(res_idxs[1:] - np.roll(res_idxs, 1)[1:] != 1)[0]
+
+
+def get_processed_feats(path, extra_feats:List[str]=None):
+	"""
+	Reads the processed features from a file. The file can be either a pickle or npz file.
+	"""
+	path_extension = Path(path).suffix
+
+	if path_extension in PICKLE_EXTENSIONS:
+		processed_feats = read_pkl(path)
+		processed_feats = parse_chain_feats(processed_feats)
+		
+	elif path_extension == '.npz':
+		npz_dict = dict(np.load(path))
+		biotite_struct = read_npz(npz_dict)
+		processed_feats = parse_npz_feats(npz_feats=biotite_struct)
+		processed_feats['modeled_idx'] = processed_feats['residue_index']
+		if extra_feats is not None:
+			num_bb_atoms = processed_feats['atom_positions'].shape[0]
+			for k in npz_dict.keys():
+				if k not in processed_feats.keys() and k in extra_feats:
+
+					# check shape:
+					if npz_dict[k].shape[0] == 3*num_bb_atoms:
+						# only use every third atom:
+						npz_dict[k] = npz_dict[k][::3]
+						warnings.warn(f"Shape of {k} was 3 times the atom_positions shape, using every third atom")
+					elif npz_dict[k].shape[0] != num_bb_atoms:
+						raise ValueError(f"Shape of {k} does not match atom_positions shape")
+				
+					processed_feats[k] = npz_dict[k]
+	else:
+		raise ValueError(f'Unknown file extension {path_extension}')
+	
+
+	
+	return processed_feats

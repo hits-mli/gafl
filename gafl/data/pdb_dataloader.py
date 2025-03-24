@@ -27,8 +27,6 @@ from gafl.data import utils as du
 from gafl.analysis import utils as au
 from gafl.analysis.metrics import calc_mdtraj_metrics
 
-PICKLE_EXTENSIONS = ['.pkl', '.pickle', '.pck', '.db', '.pck']
-
 class PdbDataModule(LightningDataModule):
     def __init__(self, data_cfg):
         super().__init__()
@@ -82,17 +80,7 @@ class PdbDataModule(LightningDataModule):
 
                 for path in tqdm(pdb_csv['processed_path']):
                     try:
-                        path_extension = Path(path).suffix
-
-                        if path_extension in PICKLE_EXTENSIONS:
-                            processed_feats = du.read_pkl(path)
-                            # processed_feats = du.parse_chain_feats(processed_feats)
-                            
-                        elif path_extension == '.npz':
-                            processed_feats = du.read_npz(path)
-                            processed_feats = du.parse_npz_feats(npz_feats=processed_feats)
-                        else:
-                            raise ValueError(f'Unknown file extension {path_extension}')
+                        processed_feats = du.get_processed_feats(path)
                         
                     except Exception as e:
                             raise ValueError(f'Error in processing {path}') from e
@@ -292,7 +280,7 @@ class PdbDataset(Dataset):
             if 'dist_breaks' not in pdb_csv.columns:
                 breaks = []
                 for path in tqdm(pdb_csv['processed_path'], desc='Saving dist breaks in metadata...'):
-                    chain_feats = PdbDataset._process_csv_row(path)
+                    chain_feats = self._process_csv_row(path)
 
                     breaks.append(du.has_breaks(chain_feats) or du.has_inconstistent_indexing(chain_feats))
                 pdb_csv['dist_breaks'] = breaks
@@ -471,24 +459,10 @@ class PdbDataset(Dataset):
                 self.csv = self.csv.sort_values('modeled_seq_len', ascending=False)
                 self._log.info(f'Validation: {len(self.csv)} examples')
 
-    @staticmethod
-    def _process_csv_row(processed_file_path):
+    def _process_csv_row(self, processed_file_path):
         try:
-            path_extension = Path(processed_file_path).suffix
-
-            if path_extension in PICKLE_EXTENSIONS:
-                processed_feats = du.read_pkl(processed_file_path)
-                processed_feats = du.parse_chain_feats(processed_feats)
-                modeled_idx = processed_feats['modeled_idx']
-                
-            elif path_extension == '.npz':
-                processed_feats = du.read_npz(processed_file_path)
-                processed_feats = du.parse_npz_feats(npz_feats=processed_feats)
-                modeled_idx = processed_feats['modeled_index']
-                # here the actual residue indices which are modeled are stored in the residue_index field
-            else:
-                raise ValueError(f'Unknown file extension of {processed_file_path}: {path_extension}')
-            
+            processed_feats = du.get_processed_feats(processed_file_path)
+            modeled_idx = processed_feats['modeled_idx']
             if len(modeled_idx) == 0:
                 raise ValueError(f'No modeled residues found in {processed_file_path}')
 
@@ -534,7 +508,7 @@ class PdbDataset(Dataset):
 
         csv_row = self.csv.iloc[example_idx]
         processed_file_path = csv_row['processed_path']
-        chain_feats = PdbDataset._process_csv_row(processed_file_path)
+        chain_feats = self._process_csv_row(processed_file_path)
         chain_feats['csv_idx'] = torch.ones(1, dtype=torch.long) * idx
 
         if self.dataset_cfg.use_res_idx:
