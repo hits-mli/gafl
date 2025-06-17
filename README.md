@@ -30,6 +30,8 @@ bash install_gatr.sh # Apply patches to gatr
 pip install -e .
 ```
 
+For customizing the environment to a specific torch or CUDA version, it might be easier to modify the `minimal_env.yaml` file provided instead of `environment.yaml`.
+
 ### Geometric Algebra Transformer
 Geometric Algebra Transformer (gatr) in version 1.2.0 requires the xformers package that resulted in conflicting package dependencies. We therefore require to install gatr from source and apply patches to remove the dependency on xformers. Please note that gatr is distributed under its own license, which you can find in LICENSE.
 
@@ -40,7 +42,7 @@ bash install_gatr.sh
 ```
 
 ### Install package
-After installing the requirements from `environment.yaml` and applying the patches to gatr, you can install the `gafl` package by running
+After installing the requirements from `environment.yaml` or `minimal_env.yaml` and applying the patches to gatr, you can install the `gafl` package by running
 ```bash
 pip install -e .
 ```
