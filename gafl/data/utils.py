@@ -610,6 +610,9 @@ def process_chain_npz(npz_feats: struc.AtomArray, dssp=None) -> Protein:
 	chain_id = npz_feats.chain_id
 	res_ids = npz_feats.res_id[::3]
 
+	if len(bfac) == 0: 
+    		bfac = np.zeros_like(atoms, dtype=np.float32)
+	
 	atom_positions = []
 	aatype = []
 	atom_mask = []
