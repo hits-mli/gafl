@@ -55,7 +55,7 @@ def _broadcast_identity(target: torch.Tensor) -> torch.Tensor:
 def skew_matrix_exponential_map_axis_angle(
     angles: torch.Tensor, skew_matrices: torch.Tensor
 ) -> torch.Tensor:
-    """
+    r"""
     Compute the matrix exponential of a rotation in axis-angle representation with the axis in skew
     matrix representation form. Maps the rotation from the lie group to the rotation matrix
     representation. Uses Rodrigues' formula instead of `torch.linalg.matrix_exp` for better
@@ -90,20 +90,20 @@ def skew_matrix_exponential_map_axis_angle(
 def skew_matrix_exponential_map(
     angles: torch.Tensor, skew_matrices: torch.Tensor, tol=1e-7
 ) -> torch.Tensor:
-    """
+    r"""
     Compute the matrix exponential of a rotation vector in skew matrix representation. Maps the
     rotation from the lie group to the rotation matrix representation. Uses the following form of
     Rodrigues' formula instead of `torch.linalg.matrix_exp` for better computational performance
     (in this case the skew matrix already contains the angle factor):
 
-    .. math ::
+    .. math::
 
         \exp(\mathbf{K}) = \mathbf{I} + \frac{\sin(\theta)}{\theta} \mathbf{K} + \frac{1-\cos(\theta)}{\theta^2} \mathbf{K}^2
 
     This form has the advantage, that Taylor expansions can be used for small angles (instead of
     having to compute the unit length axis by dividing the rotation vector by small angles):
 
-    .. math ::
+    .. math::
 
         \frac{\sin(\theta)}{\theta} \approx 1 - \frac{\theta^2}{6}
         \frac{1-\cos(\theta)}{\theta^2} \approx \frac{1}{2} - \frac{\theta^2}{24}
@@ -167,12 +167,12 @@ def rotvec_to_rotmat(rotation_vectors: torch.Tensor, tol: float = 1e-7) -> torch
 
 
 def rotmat_to_rotvec(rotation_matrices: torch.Tensor) -> torch.Tensor:
-    """
+    r"""
     Convert a batch of rotation matrices to rotation vectors (logarithmic map from SO(3) to so(3)).
     The standard logarithmic map can be derived from Rodrigues' formula via Taylor approximation
     (in this case operating on the vector coefficients of the skew so(3) basis).
 
-    ..math ::
+    .. math::
 
         \left[\log(\mathbf{R})\right]^\lor = \frac{\theta}{2\sin(\theta)} \left[\mathbf{R} - \mathbf{R}^\top\right]^\lor
 
@@ -182,14 +182,14 @@ def rotmat_to_rotvec(rotation_matrices: torch.Tensor) -> torch.Tensor:
     To improve numerical stability for case 1), the angle term at small or zero angles is
     approximated by its truncated Taylor expansion:
 
-    .. math ::
+    .. math::
 
         \left[\log(\mathbf{R})\right]^\lor \approx \frac{1}{2} (1 + \frac{\theta^2}{6}) \left[\mathbf{R} - \mathbf{R}^\top\right]^\lor
 
     For angles close or equal to pi (case 2), the outer product relation can be used to obtain the
     squared rotation vector:
 
-    .. math :: \omega \otimes \omega = \frac{1}{2}(\mathbf{I} + R)
+    .. math:: \omega \otimes \omega = \frac{1}{2}(\mathbf{I} + R)
 
     Taking the root of the diagonal elements recovers the normalized rotation vector up to the signs
     of the component. The latter can be obtained from the off-diagonal elements.
@@ -1288,7 +1288,7 @@ def igso3_expansion(
 def digso3_expansion(
     omega: torch.Tensor, sigma: torch.Tensor, l_grid: torch.Tensor, tol=1e-7
 ) -> torch.Tensor:
-    """
+    r"""
     Compute the derivative of the IGSO(3) angle probability distribution function with respect to
     the angles for pairs of angles and std dev levels. As in `igso3_expansion` a grid is used for the
     expansion levels. Evaluates the derivative directly in order to avoid second derivatives during
@@ -1296,7 +1296,7 @@ def digso3_expansion(
 
     The derivative of the angle-dependent part is computed as:
 
-    .. math ::
+    .. math::
         \frac{\partial}{\partial \omega} \frac{\sin((l+\tfrac{1}{2})\omega)}{\sin(\tfrac{1}{2}\omega)} = \frac{l\sin((l+1)\omega) - (l+1)\sin(l\omega)}{1 - \cos(\omega)}
 
     (obtained via quotient rule + different trigonometric identities).
@@ -1347,11 +1347,11 @@ def digso3_expansion(
 def dlog_igso3_expansion(
     omega: torch.Tensor, sigma: torch.Tensor, l_grid: torch.Tensor, tol=1e-7
 ) -> torch.Tensor:
-    """
+    r"""
     Compute the derivative of the logarithm of the IGSO(3) angle distribution function for pairs of
     angles and std dev levels:
 
-    .. math ::
+    .. math::
         \frac{\partial}{\partial \omega} \log f(\omega) = \frac{\tfrac{\partial}{\partial \omega} f(\omega)}{f(\omega)}
 
     Required for SO(3) score computation.
