@@ -469,6 +469,8 @@ class GeometricFrameAttention(nn.Module):
         pt_att = torch.sum(pt_att, dim=-1) * (-0.5)
         # [*, N_res, N_res]
         square_mask = mask.unsqueeze(-1) * mask.unsqueeze(-2)
+        # transform mask to int:
+        square_mask = square_mask.long()
         square_mask = self.inf * (square_mask - 1)
 
         # [*, H, N_res, N_res]
